@@ -133,23 +133,23 @@ def main():
         ),
         # GPT-4.1 models
         "gpt-4.1": ChatCompletionSampler(
-            model="gpt-4.1-2025-04-14",
+            model="gpt-4.1", # gpt-4.1-2025-04-14
             system_message=OPENAI_SYSTEM_MESSAGE_API,
             max_tokens=2048,
         ),
         "gpt-4.1-temp-1": ChatCompletionSampler(
-            model="gpt-4.1-2025-04-14",
+            model="gpt-4.1", # gpt-4.1-2025-04-14
             system_message=OPENAI_SYSTEM_MESSAGE_API,
             max_tokens=2048,
             temperature=1.0,
         ),
         "gpt-4.1-mini": ChatCompletionSampler(
-            model="gpt-4.1-mini-2025-04-14",
+            model="gpt-4.1-mini", # gpt-4.1-mini-2025-04-14
             system_message=OPENAI_SYSTEM_MESSAGE_API,
             max_tokens=2048,
         ),
         "gpt-4.1-nano": ChatCompletionSampler(
-            model="gpt-4.1-nano-2025-04-14",
+            model="gpt-4.1-nano", # gpt-4.1-nano-2025-04-14
             system_message=OPENAI_SYSTEM_MESSAGE_API,
             max_tokens=2048,
         ),
@@ -252,7 +252,7 @@ def main():
     print(f"Running with args {args}")
 
     grading_sampler = ChatCompletionSampler(
-        model="gpt-4.1-2025-04-14",
+        model="gpt-4.1", # gpt-4.1-2025-04-14
         system_message=OPENAI_SYSTEM_MESSAGE_API,
         max_tokens=2048,
     )

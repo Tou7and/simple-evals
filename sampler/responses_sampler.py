@@ -3,9 +3,10 @@ import time
 from typing import Any
 
 import openai
-from openai import OpenAI
+# from openai import OpenAI
+from openai import OpenAI, AzureOpenAI # Import AzureOpenAI
 
-from ..types import MessageList, SamplerBase, SamplerResponse
+from ..ttypes import MessageList, SamplerBase, SamplerResponse
 
 
 class ResponsesSampler(SamplerBase):
@@ -21,10 +22,19 @@ class ResponsesSampler(SamplerBase):
         max_tokens: int = 1024,
         reasoning_model: bool = False,
         reasoning_effort: str | None = None,
+        use_azure: bool = True,
     ):
-        self.api_key_name = "OPENAI_API_KEY"
-        assert os.environ.get("OPENAI_API_KEY"), "Please set OPENAI_API_KEY"
-        self.client = OpenAI()
+        self.use_azure = use_azure
+        if self.use_azure:
+            self.client = AzureOpenAI(
+                api_key=os.getenv("AZURE_OPENAI_KEY"),
+                api_version=os.getenv("AZURE_API_VER"), # 2024-12-01-preview
+                azure_endpoint=os.getenv("AZURE_ENDPOINT"),
+            )
+        else:
+            self.api_key_name = "OPENAI_API_KEY"
+            self.client = OpenAI()
+
         self.model = model
         self.system_message = system_message
         self.temperature = temperature

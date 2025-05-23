@@ -3,7 +3,7 @@ import os
 
 import anthropic
 
-from ..types import MessageList, SamplerBase, SamplerResponse
+from ..ttypes import MessageList, SamplerBase, SamplerResponse
 from .. import common
 
 CLAUDE_SYSTEM_MESSAGE_LMSYS = (

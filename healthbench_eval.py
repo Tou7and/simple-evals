@@ -31,11 +31,15 @@ from .sampler.chat_completion_sampler import (
     OPENAI_SYSTEM_MESSAGE_API,
     ChatCompletionSampler,
 )
-from .types import Eval, EvalResult, MessageList, SamplerBase, SingleEvalResult
+from .ttypes import Eval, EvalResult, MessageList, SamplerBase, SingleEvalResult
 
-INPUT_PATH = "https://openaipublic.blob.core.windows.net/simple-evals/healthbench/2025-05-07-06-14-12_oss_eval.jsonl"
-INPUT_PATH_HARD = "https://openaipublic.blob.core.windows.net/simple-evals/healthbench/hard_2025-05-08-21-00-10.jsonl"
-INPUT_PATH_CONSENSUS = "https://openaipublic.blob.core.windows.net/simple-evals/healthbench/consensus_2025-05-09-20-00-46.jsonl"
+# INPUT_PATH = "https://openaipublic.blob.core.windows.net/simple-evals/healthbench/2025-05-07-06-14-12_oss_eval.jsonl"
+#　INPUT_PATH_HARD = "https://openaipublic.blob.core.windows.net/simple-evals/healthbench/hard_2025-05-08-21-00-10.jsonl"
+# INPUT_PATH_CONSENSUS = "https://openaipublic.blob.core.windows.net/simple-evals/healthbench/consensus_2025-05-09-20-00-46.jsonl"
+
+INPUT_PATH = "/mnt/d/projects/local/heath_bench/data/2025-05-07-06-14-12_oss_eval.jsonl"
+INPUT_PATH_HARD = "/mnt/d/projects/local/heath_bench/data/hard_2025-05-08-21-00-10.jsonl"
+INPUT_PATH_CONSENSUS = "/mnt/d/projects/local/heath_bench/data/consensus_2025-05-09-20-00-46.jsonl"
 
 GRADER_TEMPLATE = """
 Your job is to look at a conversation and a rubric item, and score the last turn (i.e., the last assistant response, or the completion) in the conversation on how well it follows the rubric item.
@@ -294,6 +298,7 @@ class HealthBenchEval(Eval):
             assert False, f"Invalid subset name: {subset_name}"
         with bf.BlobFile(input_path, "rb") as f:
             examples = [json.loads(line) for line in f]
+            examples = examples[:3] # debug: just run 3
         for example in examples:
             example["rubrics"] = [RubricItem.from_dict(d) for d in example["rubrics"]]
 
@@ -559,9 +564,9 @@ def physician_completions_main(
     date_str = now.strftime("%Y%m%d_%H%M")
 
     grading_sampler = ChatCompletionSampler(
-        model="gpt-4.1-2025-04-14",
+        model="gpt-4.1", # gpt-4.1-2025-04-14
         system_message=OPENAI_SYSTEM_MESSAGE_API,
-        max_tokens=2048,
+        max_tokens=2048
     )
     dummy_sampler = SamplerBase()
 

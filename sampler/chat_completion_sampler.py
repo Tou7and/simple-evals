@@ -1,10 +1,12 @@
+# simple-evals/sampler/chat_completion_sampler.py
 import time
+import os
 from typing import Any
 
 import openai
-from openai import OpenAI
+from openai import OpenAI, AzureOpenAI # Import AzureOpenAI
 
-from ..types import MessageList, SamplerBase, SamplerResponse
+from ..ttypes import MessageList, SamplerBase, SamplerResponse
 
 OPENAI_SYSTEM_MESSAGE_API = "You are a helpful assistant."
 OPENAI_SYSTEM_MESSAGE_CHATGPT = (
@@ -20,14 +22,23 @@ class ChatCompletionSampler(SamplerBase):
 
     def __init__(
         self,
-        model: str = "gpt-3.5-turbo",
+        model: str = "gpt-4.1-nano",
         system_message: str | None = None,
         temperature: float = 0.5,
         max_tokens: int = 1024,
+        use_azure: bool = True,
     ):
         self.api_key_name = "OPENAI_API_KEY"
-        self.client = OpenAI()
-        # using api_key=os.environ.get("OPENAI_API_KEY")  # please set your API_KEY
+        self.use_azure = use_azure
+        if self.use_azure:
+            self.client = AzureOpenAI(
+                api_key=os.getenv("AZURE_OPENAI_KEY"),
+                api_version=os.getenv("AZURE_API_VER"), # 2024-12-01-preview
+                azure_endpoint=os.getenv("AZURE_ENDPOINT"),
+            )
+        else:
+            self.client = OpenAI()
+
         self.model = model
         self.system_message = system_message
         self.temperature = temperature
@@ -63,8 +74,10 @@ class ChatCompletionSampler(SamplerBase):
         trial = 0
         while True:
             try:
+                # For Azure OpenAI, the model parameter usually refers to the deployment name.
+                # The API version is set at the client level.
                 response = self.client.chat.completions.create(
-                    model=self.model,
+                    model=self.model, # This will be your deployment name
                     messages=message_list,
                     temperature=self.temperature,
                     max_tokens=self.max_tokens,
