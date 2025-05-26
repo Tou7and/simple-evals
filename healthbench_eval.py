@@ -37,9 +37,13 @@ from .ttypes import Eval, EvalResult, MessageList, SamplerBase, SingleEvalResult
 #　INPUT_PATH_HARD = "https://openaipublic.blob.core.windows.net/simple-evals/healthbench/hard_2025-05-08-21-00-10.jsonl"
 # INPUT_PATH_CONSENSUS = "https://openaipublic.blob.core.windows.net/simple-evals/healthbench/consensus_2025-05-09-20-00-46.jsonl"
 
-INPUT_PATH = "/mnt/d/projects/local/heath_bench/data/2025-05-07-06-14-12_oss_eval.jsonl"
-INPUT_PATH_HARD = "/mnt/d/projects/local/heath_bench/data/hard_2025-05-08-21-00-10.jsonl"
-INPUT_PATH_CONSENSUS = "/mnt/d/projects/local/heath_bench/data/consensus_2025-05-09-20-00-46.jsonl"
+# INPUT_PATH = "/mnt/d/projects/local/heath_bench/data/2025-05-07-06-14-12_oss_eval.jsonl"
+# INPUT_PATH_HARD = "/mnt/d/projects/local/heath_bench/data/hard_2025-05-08-21-00-10.jsonl"
+# INPUT_PATH_CONSENSUS = "/mnt/d/projects/local/heath_bench/data/consensus_2025-05-09-20-00-46.jsonl"
+
+INPUT_PATH = "/mnt/d/projects/local/heath_bench/data/chinese_subset/oss_eval_zh.jsonl"
+INPUT_PATH_HARD = "/mnt/d/projects/local/heath_bench/data/chinese_subset/hard_zh.jsonl"
+INPUT_PATH_CONSENSUS = "/mnt/d/projects/local/heath_bench/data/chinese_subset/consensus_zh.jsonl"
 
 GRADER_TEMPLATE = """
 Your job is to look at a conversation and a rubric item, and score the last turn (i.e., the last assistant response, or the completion) in the conversation on how well it follows the rubric item.
@@ -156,7 +160,6 @@ def calculate_score(
     )
     overall_score = achieved_points / total_possible_points
     return overall_score
-
 
 def get_usage_dict(response_usage) -> dict[str, int | None]:
     if response_usage is None:
@@ -298,7 +301,6 @@ class HealthBenchEval(Eval):
             assert False, f"Invalid subset name: {subset_name}"
         with bf.BlobFile(input_path, "rb") as f:
             examples = [json.loads(line) for line in f]
-            examples = examples[:3] # debug: just run 3
         for example in examples:
             example["rubrics"] = [RubricItem.from_dict(d) for d in example["rubrics"]]
 
@@ -376,6 +378,8 @@ class HealthBenchEval(Eval):
                 "<<conversation>>", convo_str
             ).replace("<<rubric_item>>", str(rubric_item))
             messages: MessageList = [dict(content=grader_prompt, role="user")]
+
+            n_error = 0
             while True:
                 sampler_response = self.grader_model(messages)
                 grading_response = sampler_response.response_text
@@ -385,6 +389,12 @@ class HealthBenchEval(Eval):
                     if label is True or label is False:
                         break
                 print("Grading failed due to bad JSON output, retrying...")
+
+                n_error += 1
+                if n_error > 2:
+                    grading_response_dict = None
+                    break
+
             return grading_response_dict
 
         grading_response_list = common.map_with_progress(
@@ -395,7 +405,9 @@ class HealthBenchEval(Eval):
 
         # compute the overall score
         overall_score = calculate_score(rubric_items, grading_response_list)
-        assert overall_score is not None
+        # assert overall_score is not None
+        if overall_score is None:
+            overall_score = 0
         metrics = {
             "overall_score": overall_score,
         }

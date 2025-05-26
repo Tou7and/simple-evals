@@ -52,7 +52,7 @@ def main():
     parser.add_argument(
         "--n-threads",
         type=int,
-        default=120,
+        default=4,
         help="Number of threads to run. Only supported for HealthBench and HealthBenchMeta.",
     )
     parser.add_argument("--debug", action="store_true", help="Run in debug mode")
